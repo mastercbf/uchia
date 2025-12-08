@@ -155,6 +155,32 @@
       color: #c9a959;
     }
 
+    .help-banner {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 1rem 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-bottom: 3px solid rgba(0,0,0,0.1);
+    }
+
+    .help-banner:hover {
+      background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+
+    .help-banner-text {
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .help-banner-subtext {
+      font-size: 0.75rem;
+      opacity: 0.9;
+      margin-top: 0.25rem;
+    }
+
     .section-header {
       display: flex;
       justify-content: space-between;
@@ -228,6 +254,7 @@
       display: flex;
       align-items: center;
       gap: 0.75rem;
+      position: relative;
     }
 
     .list-tab:hover {
@@ -252,6 +279,31 @@
     .list-tab.active .list-count {
       background: #c9a959;
       color: white;
+    }
+
+    .delete-list-btn {
+      opacity: 0;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      border: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-left: auto;
+    }
+
+    .list-tab:hover .delete-list-btn {
+      opacity: 1;
+    }
+
+    .delete-list-btn:hover {
+      background: #e74c3c;
+      transform: scale(1.1);
     }
 
     .gift-grid {
@@ -500,6 +552,11 @@
   </style>
 </head>
 <body>
+  <div class="help-banner" onclick="showBookmarkletSetup()">
+    <div class="help-banner-text">💡 Amazon blocking the scraper? Use the Bookmarklet! Click here to set it up.</div>
+    <div class="help-banner-subtext">3-step setup: Copy code → Create bookmark → Start shopping!</div>
+  </div>
+  
   <div class="header">
     <div class="header-top">
       <div>
@@ -507,11 +564,17 @@
         <div class="logo-subtitle">You Can Have It All</div>
       </div>
       <div class="header-actions">
-        <a href="javascript:(function(){const t=document.title,u=window.location.href;let i=document.querySelector('meta[property=%22og:image%22]')?document.querySelector('meta[property=%22og:image%22]').content:null;if(!i){const e=document.querySelector('[data-cel-widget=%22productTitle%22]')?.closest('[data-component-type]')?.querySelector('img');i=e?e.src:null}let p='';if(u.includes('amazon')){const w=document.querySelector('.a-price-whole'),f=document.querySelector('.a-price-fraction'),s=document.querySelector('.a-price-symbol');if(w){const wh=w.textContent.trim().replace(/[^0-9]/g,''),fr=f?f.textContent.trim():'00',sy=s?s.textContent.trim():'$';p=`${sy}${wh}.${fr}`}}const d={title:t,url:u,image:i,price:p};localStorage.setItem('uchiaTemp',JSON.stringify(d));alert('✓ Product captured! Go back to Uchia to save it.');})();" 
+        <a href="javascript:void(0)" 
            class="bookmarklet-btn"
-           onclick="alert('📌 Drag this button to your bookmarks bar!'); return false;">
+           draggable="true"
+           title="Drag me to your bookmarks bar!"
+           onclick="copyBookmarkletCode(); return false;"
+           id="bookmarklet-link">
           📌 Add to Uchia
         </a>
+        <button class="btn btn-secondary" onclick="showBookmarkletSetup()" style="font-size: 0.75rem; padding: 0.5rem 1rem;">
+          Setup Guide
+        </button>
       </div>
     </div>
     <nav class="nav" id="nav-tabs"></nav>
@@ -527,7 +590,7 @@
 
     <div class="section-header">
       <h2 class="section-title" id="list-title">Wishlist</h2>
-      <button class="btn" onclick="showAddGiftModal()">
+      <button class="btn" onclick="showAddGiftModal()" id="add-gift-btn">
         <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         Add Gift
       </button>
@@ -584,11 +647,31 @@
     }
 
     function checkForCapturedProduct() {
+      // First check localStorage (for same-domain)
       const captured = localStorage.getItem('uchiaTemp');
       if (captured) {
         document.getElementById('bookmarklet-info').style.display = 'block';
         return JSON.parse(captured);
       }
+      
+      // Then check URL parameters (for cross-domain)
+      const urlParams = new URLSearchParams(window.location.search);
+      const productData = urlParams.get('product');
+      if (productData) {
+        try {
+          const data = JSON.parse(decodeURIComponent(productData));
+          // Save to localStorage and show banner
+          localStorage.setItem('uchiaTemp', JSON.stringify(data));
+          document.getElementById('bookmarklet-info').style.display = 'block';
+          
+          // Clean URL
+          window.history.replaceState({}, document.title, window.location.pathname);
+          return data;
+        } catch (e) {
+          console.error('Error parsing product data from URL:', e);
+        }
+      }
+      
       return null;
     }
 
@@ -596,6 +679,12 @@
       const captured = localStorage.getItem('uchiaTemp');
       if (captured) {
         const data = JSON.parse(captured);
+        
+        // Create a list if none exist
+        if (state.lists.length === 0) {
+          addList('Wishlist');
+        }
+        
         addGift(data.title, data.url, data.price, data.image);
         localStorage.removeItem('uchiaTemp');
         document.getElementById('bookmarklet-info').style.display = 'none';
@@ -605,6 +694,175 @@
     function dismissCapture() {
       localStorage.removeItem('uchiaTemp');
       document.getElementById('bookmarklet-info').style.display = 'none';
+    }
+
+    function testBookmarklet() {
+      // Simulate what the bookmarklet does
+      const testData = {
+        title: 'Test Product - Uchia Gift List Manager',
+        url: window.location.href,
+        image: null,
+        price: '$29.99'
+      };
+      
+      localStorage.setItem('uchiaTemp', JSON.stringify(testData));
+      alert('✓ Test product saved! The banner should appear now.');
+      
+      // Check and show the banner
+      checkForCapturedProduct();
+      document.getElementById('bookmarklet-info').style.display = 'block';
+    }
+
+    function getUchiaPath() {
+      return window.location.href.split('?')[0];
+    }
+
+    function generateBookmarkletCode() {
+      const uchiaPath = getUchiaPath();
+      // This is the bookmarklet code that will run on Amazon
+      const code = `javascript:(function(){let title=document.title;const url=window.location.href;let img=null,price='';const titleEl=document.querySelector('[data-cel-widget="productTitle"]')||document.querySelector('#productTitle');if(titleEl)title=titleEl.textContent.trim();const ogImg=document.querySelector('meta[property="og:image"]');if(ogImg)img=ogImg.content;if(!img){const landingImg=document.querySelector('img#landingImage');if(landingImg)img=landingImg.src}if(!img){const imgs=document.querySelectorAll('img');for(let i=0;i<imgs.length;i++){if(imgs[i].src.includes('images-amazon.com/images/I/')){img=imgs[i].src;break}}}if(url.includes('amazon')){const pw=document.querySelector('.a-price-whole'),pf=document.querySelector('.a-price-fraction');if(pw){const w=pw.textContent.trim().replace(/[^0-9]/g,''),f=pf?pf.textContent.trim():'00';price='$'+w+'.'+f}if(!price){const po=document.querySelector('.a-price .a-offscreen');if(po)price=po.textContent.trim()}}const data=encodeURIComponent(JSON.stringify({title:title,url:url,image:img,price:price}));window.open('${uchiaPath}?product='+data,'uchia')})();`;
+      return code;
+    }
+
+    function copyBookmarkletCode() {
+      const code = generateBookmarkletCode();
+      navigator.clipboard.writeText(code).then(() => {
+        alert('📋 Bookmarklet code copied! Now:\n\n1. Create a new bookmark\n2. Name it "Add to Uchia"\n3. Paste the code as the URL');
+      }).catch(() => {
+        showBookmarkletSetup();
+      });
+    }
+
+    function showBookmarkletSetup() {
+      const code = generateBookmarkletCode();
+      const modal = document.getElementById('add-gift-modal');
+      modal.innerHTML = `
+        <div class="form-modal" onclick="if(event.target === this) closeModal()">
+          <div class="form-container" style="max-width: 800px;">
+            <h3 class="form-title">Bookmarklet Setup</h3>
+            
+            <div style="background: #e3f2fd; padding: 1.5rem; border-radius: 4px; border-left: 4px solid #2196f3; margin-bottom: 2rem;">
+              <strong style="color: #1976d2;">📝 Simple Setup (3 steps)</strong>
+              <p style="margin-top: 0.5rem; color: #424242; line-height: 1.6;">
+                Because of browser security, localStorage doesn't work across different domains. This bookmarklet opens Uchia with the product data in the URL instead!
+              </p>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+              <h4 style="font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; margin-bottom: 1rem;">Step 1: Copy the Code</h4>
+              <textarea readonly style="width: 100%; height: 120px; font-family: monospace; font-size: 0.75rem; padding: 0.75rem; border: 2px solid #e0e0e0; border-radius: 4px;" onclick="this.select()">${code}</textarea>
+              <button class="btn" onclick="navigator.clipboard.writeText(\`${code.replace(/`/g, '\\`')}\`).then(()=>alert('✓ Copied!'))" style="width: 100%; margin-top: 0.5rem;">
+                📋 Copy Code
+              </button>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+              <h4 style="font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; margin-bottom: 1rem;">Step 2: Create Bookmark</h4>
+              <ol style="line-height: 2; padding-left: 1.5rem;">
+                <li><strong>Right-click</strong> your bookmarks bar</li>
+                <li>Select <strong>"Add Page"</strong> or <strong>"Add Bookmark"</strong></li>
+                <li>Name it: <code style="background: #f5f5f5; padding: 2px 6px;">Add to Uchia</code></li>
+                <li>In the URL field, <strong>paste</strong> the code you copied</li>
+                <li>Click <strong>Save</strong></li>
+              </ol>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+              <h4 style="font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; margin-bottom: 1rem;">Step 3: Use It!</h4>
+              <ol style="line-height: 2; padding-left: 1.5rem;">
+                <li>Go to any Amazon product page</li>
+                <li>Click your <strong>"Add to Uchia"</strong> bookmark</li>
+                <li>Uchia opens in a new tab with the product ready to save!</li>
+                <li>Click <strong>"Add to Current List"</strong></li>
+              </ol>
+            </div>
+
+            <div style="background: #f1f8e9; padding: 1.5rem; border-radius: 4px; border-left: 4px solid #8bc34a;">
+              <strong style="color: #558b2f;">✅ How This Works:</strong>
+              <ul style="margin-top: 0.5rem; padding-left: 1.5rem; line-height: 1.8; color: #33691e;">
+                <li>Captures product data on Amazon</li>
+                <li>Opens Uchia in a new tab</li>
+                <li>Passes the data through the URL</li>
+                <li>Banner appears automatically</li>
+              </ul>
+            </div>
+            
+            <div class="form-actions" style="margin-top: 2rem;">
+              <button class="btn" style="flex: 1;" onclick="closeModal()">Got It!</button>
+            </div>
+          </div>
+        </div>
+      `;
+      modal.style.display = 'flex';
+    }
+
+    function showBookmarkletInstructions() {
+      const modal = document.getElementById('add-gift-modal');
+      modal.innerHTML = `
+        <div class="form-modal" onclick="if(event.target === this) closeModal()">
+          <div class="form-container" style="max-width: 700px;">
+            <h3 class="form-title">How to Use the Bookmarklet</h3>
+            
+            <div style="background: #fffbf0; padding: 1.5rem; border: 2px solid #c9a959; border-radius: 4px; margin-bottom: 1.5rem;">
+              <p style="font-size: 1rem; line-height: 1.6; margin-bottom: 1rem;">
+                The bookmarklet captures products <strong>while you browse Amazon</strong> - it sees exactly what you see, so Amazon can't block it!
+              </p>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+              <h4 style="font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; margin-bottom: 1rem; color: #c9a959;">
+                ⚙️ One-Time Setup
+              </h4>
+              <ol style="line-height: 2.5; padding-left: 1.5rem; font-size: 1rem;">
+                <li><strong>Find the gold button</strong> at the top-right that says "📌 Add to Uchia"</li>
+                <li><strong>Drag it</strong> to your browser's bookmarks bar<br>
+                    <span style="font-size: 0.85rem; color: #666;">
+                    Don't see bookmarks bar? Press <code style="background: #f0f0f0; padding: 2px 6px; border-radius: 3px;">Ctrl+Shift+B</code> (Windows) or <code style="background: #f0f0f0; padding: 2px 6px; border-radius: 3px;">Cmd+Shift+B</code> (Mac)
+                    </span>
+                </li>
+                <li><strong>Test it!</strong> Click the "Test on This Page" button to see if it works</li>
+              </ol>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+              <h4 style="font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; margin-bottom: 1rem; color: #c9a959;">
+                🛍️ Using It
+              </h4>
+              <ol style="line-height: 2.5; padding-left: 1.5rem; font-size: 1rem;">
+                <li>Go to <strong>any Amazon product page</strong></li>
+                <li>Click your <strong>"📌 Add to Uchia"</strong> bookmark</li>
+                <li>See the alert: <span style="color: green;">"✓ Product saved!"</span></li>
+                <li><strong>Come back to this Uchia tab</strong></li>
+                <li>You'll see a yellow banner - click <strong>"Add to Current List"</strong></li>
+              </ol>
+            </div>
+
+            <div style="background: #e8f5e9; padding: 1.5rem; border-radius: 4px; border-left: 4px solid #4caf50; margin-bottom: 1.5rem;">
+              <strong style="color: #2e7d32;">✅ Why this works better:</strong>
+              <ul style="margin-top: 0.5rem; padding-left: 1.5rem; line-height: 1.8; color: #1b5e20;">
+                <li>Runs in YOUR browser while YOU see the page</li>
+                <li>Amazon can't detect or block it</li>
+                <li>One click while shopping - super fast</li>
+                <li>Gets the exact image you see</li>
+              </ul>
+            </div>
+
+            <div style="background: #fff3cd; padding: 1rem; border-radius: 4px; border-left: 4px solid #ffc107; margin-bottom: 1.5rem;">
+              <strong>⚠️ Troubleshooting:</strong>
+              <ul style="margin-top: 0.5rem; padding-left: 1.5rem; line-height: 1.8; font-size: 0.9rem;">
+                <li><strong>Banner doesn't appear?</strong> Make sure you're on the same Uchia tab (refresh if needed)</li>
+                <li><strong>Can't drag button?</strong> Right-click → "Bookmark This Link"</li>
+                <li><strong>Still stuck?</strong> Click "Test on This Page" to verify it works</li>
+              </ul>
+            </div>
+            
+            <div class="form-actions" style="margin-top: 2rem;">
+              <button class="btn" style="flex: 1;" onclick="closeModal()">Got It! Let's Go Shopping 🎁</button>
+            </div>
+          </div>
+        </div>
+      `;
+      modal.style.display = 'flex';
     }
 
     function addList(name) {
@@ -623,12 +881,17 @@
     }
 
     function deleteList(listId) {
-      if (state.lists.length === 1) return;
-      if (confirm('Delete this list and all its gifts?')) {
+      const list = state.lists.find(l => l.id === listId);
+      const listName = list ? list.name : 'this list';
+      
+      if (confirm(`Delete "${listName}" and all its gifts?`)) {
         state.lists = state.lists.filter(list => list.id !== listId);
+        
+        // If we deleted the active list, switch to another or clear
         if (state.activeListId === listId) {
-          state.activeListId = state.lists[0].id;
+          state.activeListId = state.lists.length > 0 ? state.lists[0].id : null;
         }
+        
         saveToLocalStorage();
         render();
       }
@@ -909,11 +1172,25 @@
 
     function renderTabs() {
       const container = document.getElementById('nav-tabs');
+      
+      if (state.lists.length === 0) {
+        container.innerHTML = `
+          <div class="nav-item" onclick="showAddListModal()">
+            ${icons.plus} New List
+          </div>
+        `;
+        document.getElementById('list-title').textContent = 'Your Lists';
+        return;
+      }
+      
       container.innerHTML = state.lists.map(list => `
         <div class="nav-item list-tab ${list.id === state.activeListId ? 'active' : ''}" 
              onclick="setActiveList(${list.id})">
           ${list.name}
           <span class="list-count">${list.gifts.length}</span>
+          <button class="delete-list-btn" onclick="event.stopPropagation(); deleteList(${list.id})" title="Delete list">
+            ${icons.trash}
+          </button>
         </div>
       `).join('') + `
         <div class="nav-item" onclick="showAddListModal()">
@@ -929,6 +1206,22 @@
       const container = document.getElementById('gifts-container');
       const activeList = getActiveList();
 
+      // No lists at all
+      if (state.lists.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">✨</div>
+            <h3 class="empty-state-title">What Are You Waiting For?</h3>
+            <p class="empty-state-text" style="font-size: 1.2rem; margin-top: 1rem;">You are worth it</p>
+            <button class="btn" onclick="showAddListModal()" style="margin-top: 2rem;">
+              ${icons.plus} Create Your First List
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      // List exists but empty
       if (!activeList || activeList.gifts.length === 0) {
         container.innerHTML = `
           <div class="empty-state">
@@ -977,6 +1270,12 @@
       renderTabs();
       renderGifts();
       renderFooter();
+      
+      // Hide Add Gift button if no lists
+      const addGiftBtn = document.getElementById('add-gift-btn');
+      if (addGiftBtn) {
+        addGiftBtn.style.display = state.lists.length === 0 ? 'none' : 'inline-flex';
+      }
     }
 
     loadFromLocalStorage();
