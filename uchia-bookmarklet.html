@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Uchia - Gifts for U</title>
+  <title>Uchia - Gift Lists</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap">
   <style>
     * {
@@ -56,6 +56,11 @@
       letter-spacing: 2px;
       color: white;
       position: relative;
+      transition: color 0.2s;
+    }
+
+    .logo:hover {
+      color: #c9a959;
     }
 
     .logo-subtitle {
@@ -66,6 +71,12 @@
       text-transform: uppercase;
       color: #999;
       margin-top: -0.5rem;
+      transition: color 0.2s;
+    }
+
+    .logo:hover + .logo-subtitle,
+    a:hover .logo-subtitle {
+      color: #c9a959;
     }
 
     .header-actions {
@@ -560,8 +571,10 @@
   <div class="header">
     <div class="header-top">
       <div>
-        <div class="logo">UCHIA</div>
-        <div class="logo-subtitle">You Can Have It All</div>
+        <a href="index.html" style="text-decoration: none; color: inherit; cursor: pointer;">
+          <div class="logo">UCHIA</div>
+          <div class="logo-subtitle">You Can Have It All</div>
+        </a>
       </div>
       <div class="header-actions">
         <a href="javascript:void(0)" 
