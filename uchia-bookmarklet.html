@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Uchia - Gift Lists</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      background: #f5f5f5;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .header {
+      background: #000;
+      color: white;
+      padding: 2rem 2rem 1.5rem;
+      border-bottom: 3px solid #c9a959;
+    }
+
+    .header-top {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3.5rem;
+      letter-spacing: 2px;
+      color: white;
+      position: relative;
+    }
+
+    .logo-subtitle {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 3px;
+      font-weight: 400;
+      text-transform: uppercase;
+      color: #999;
+      margin-top: -0.5rem;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .bookmarklet-btn {
+      background: #c9a959;
+      color: #000;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: move;
+      text-decoration: none;
+      transition: all 0.2s;
+      border: 2px solid #c9a959;
+    }
+
+    .bookmarklet-btn:hover {
+      background: #fff;
+      color: #000;
+    }
+
+    .nav {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      gap: 2.5rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .nav-item {
+      color: white;
+      text-decoration: none;
+      cursor: pointer;
+      transition: color 0.2s;
+      padding: 0.5rem 0;
+      border-bottom: 2px solid transparent;
+    }
+
+    .nav-item:hover {
+      color: #c9a959;
+      border-bottom-color: #c9a959;
+    }
+
+    .nav-item.active {
+      color: #c9a959;
+      border-bottom-color: #c9a959;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+    }
+
+    .bookmarklet-info {
+      background: #fffbf0;
+      border: 2px solid #c9a959;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      border-radius: 4px;
+    }
+
+    .bookmarklet-info h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      color: #000;
+    }
+
+    .bookmarklet-info p {
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 0.5rem;
+    }
+
+    .bookmarklet-info strong {
+      color: #c9a959;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid #000;
+    }
+
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.5rem;
+      letter-spacing: 1px;
+      color: #000;
+    }
+
+    .btn {
+      background: #000;
+      color: white;
+      border: none;
+      padding: 0.875rem 1.75rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .btn:hover {
+      background: #c9a959;
+      transform: translateY(-2px);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: white;
+      color: #000;
+      border: 2px solid #000;
+    }
+
+    .btn-secondary:hover {
+      background: #000;
+      color: white;
+    }
+
+    .tabs-container {
+      display: flex;
+      gap: 0;
+      margin-bottom: 3rem;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    .list-tab {
+      background: transparent;
+      color: #666;
+      padding: 1rem 2rem;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border: none;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .list-tab:hover {
+      color: #000;
+      background: #f9f9f9;
+    }
+
+    .list-tab.active {
+      color: #000;
+      border-bottom-color: #c9a959;
+      background: white;
+    }
+
+    .list-count {
+      background: #f0f0f0;
+      color: #666;
+      padding: 0.25rem 0.5rem;
+      border-radius: 3px;
+      font-size: 0.75rem;
+    }
+
+    .list-tab.active .list-count {
+      background: #c9a959;
+      color: white;
+    }
+
+    .gift-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 2rem;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .gift-card {
+      background: white;
+      border: 1px solid #e0e0e0;
+      transition: all 0.2s;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .gift-card:hover {
+      border-color: #000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .gift-image-container {
+      width: 100%;
+      height: 280px;
+      background: #f5f5f5;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .gift-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .gift-icon-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      color: #ccc;
+    }
+
+    .gift-details {
+      padding: 1.25rem;
+    }
+
+    .gift-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #000;
+      margin-bottom: 0.5rem;
+      line-height: 1.3;
+    }
+
+    .gift-price {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #c9a959;
+      margin-bottom: 0.75rem;
+    }
+
+    .gift-link {
+      font-size: 0.85rem;
+      color: #666;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .gift-link:hover {
+      color: #000;
+    }
+
+    .delete-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0;
+      transition: all 0.2s;
+    }
+
+    .edit-btn {
+      position: absolute;
+      top: 1rem;
+      right: 4rem;
+      background: rgba(201, 169, 89, 0.9);
+      color: white;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0;
+      transition: all 0.2s;
+    }
+
+    .gift-card:hover .delete-btn,
+    .gift-card:hover .edit-btn {
+      opacity: 1;
+    }
+
+    .delete-btn:hover {
+      background: #c9a959;
+    }
+
+    .edit-btn:hover {
+      background: rgba(201, 169, 89, 1);
+      transform: scale(1.1);
+    }
+
+    .form-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 2rem;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .form-container {
+      background: white;
+      padding: 2.5rem;
+      max-width: 600px;
+      width: 100%;
+      border: 3px solid #000;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    .form-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 1px;
+      margin-bottom: 2rem;
+      color: #000;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 0.5rem;
+      color: #000;
+    }
+
+    .input {
+      width: 100%;
+      padding: 0.875rem;
+      border: 2px solid #e0e0e0;
+      font-size: 1rem;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.2s;
+    }
+
+    .input:focus {
+      outline: none;
+      border-color: #000;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 6rem 2rem;
+      color: #999;
+    }
+
+    .empty-state-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      opacity: 0.3;
+    }
+
+    .empty-state-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 1px;
+      color: #666;
+      margin-bottom: 0.5rem;
+    }
+
+    .empty-state-text {
+      font-size: 1rem;
+      color: #999;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 2rem;
+      background: #f0f0f0;
+      border-top: 2px solid #e0e0e0;
+      margin-top: 4rem;
+    }
+
+    .footer-text {
+      font-size: 0.85rem;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .icon {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <div class="logo">UCHIA</div>
+        <div class="logo-subtitle">You Can Have It All</div>
+      </div>
+      <div class="header-actions">
+        <a href="javascript:(function(){const t=document.title,u=window.location.href;let i=document.querySelector('meta[property=%22og:image%22]')?document.querySelector('meta[property=%22og:image%22]').content:null;if(!i){const e=document.querySelector('[data-cel-widget=%22productTitle%22]')?.closest('[data-component-type]')?.querySelector('img');i=e?e.src:null}let p='';if(u.includes('amazon')){const w=document.querySelector('.a-price-whole'),f=document.querySelector('.a-price-fraction'),s=document.querySelector('.a-price-symbol');if(w){const wh=w.textContent.trim().replace(/[^0-9]/g,''),fr=f?f.textContent.trim():'00',sy=s?s.textContent.trim():'$';p=`${sy}${wh}.${fr}`}}const d={title:t,url:u,image:i,price:p};localStorage.setItem('uchiaTemp',JSON.stringify(d));alert('✓ Product captured! Go back to Uchia to save it.');})();" 
+           class="bookmarklet-btn"
+           onclick="alert('📌 Drag this button to your bookmarks bar!'); return false;">
+          📌 Add to Uchia
+        </a>
+      </div>
+    </div>
+    <nav class="nav" id="nav-tabs"></nav>
+  </div>
+
+  <div class="container">
+    <div class="bookmarklet-info" id="bookmarklet-info" style="display: none;">
+      <h3>🎉 Product Captured!</h3>
+      <p>Click below to add it to your list.</p>
+      <button class="btn" onclick="addCapturedProduct()">Add to Current List</button>
+      <button class="btn btn-secondary" onclick="dismissCapture()" style="margin-left: 1rem;">Dismiss</button>
+    </div>
+
+    <div class="section-header">
+      <h2 class="section-title" id="list-title">Wishlist</h2>
+      <button class="btn" onclick="showAddGiftModal()">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Add Gift
+      </button>
+    </div>
+
+    <div id="gifts-container"></div>
+  </div>
+
+  <div class="footer">
+    <p class="footer-text" id="footer-stats"></p>
+    <p style="margin-top: 1rem; font-size: 0.75rem; color: #999;">
+      💡 Drag the "📌 Add to Uchia" button to your bookmarks bar to save products from any site!
+    </p>
+  </div>
+
+  <!-- Add Gift Modal -->
+  <div id="add-gift-modal" style="display: none;"></div>
+
+  <!-- Add List Modal -->
+  <div id="add-list-modal" style="display: none;"></div>
+
+  <script>
+    const icons = {
+      plus: '<svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>',
+      trash: '<svg class="icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>',
+      gift: '🎁',
+      external: '<svg class="icon" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>',
+      edit: '<svg class="icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>'
+    };
+
+    let state = {
+      lists: [
+        { id: 1, name: 'Wishlist', gifts: [] }
+      ],
+      activeListId: 1
+    };
+
+    function getActiveList() {
+      return state.lists.find(list => list.id === state.activeListId);
+    }
+
+    function saveToLocalStorage() {
+      localStorage.setItem('uchiaGiftLists', JSON.stringify(state.lists));
+      localStorage.setItem('uchiaActiveListId', state.activeListId);
+    }
+
+    function loadFromLocalStorage() {
+      const savedLists = localStorage.getItem('uchiaGiftLists');
+      const savedActiveId = localStorage.getItem('uchiaActiveListId');
+      if (savedLists) {
+        state.lists = JSON.parse(savedLists);
+        state.activeListId = savedActiveId ? parseInt(savedActiveId) : state.lists[0]?.id;
+      }
+    }
+
+    function checkForCapturedProduct() {
+      const captured = localStorage.getItem('uchiaTemp');
+      if (captured) {
+        document.getElementById('bookmarklet-info').style.display = 'block';
+        return JSON.parse(captured);
+      }
+      return null;
+    }
+
+    function addCapturedProduct() {
+      const captured = localStorage.getItem('uchiaTemp');
+      if (captured) {
+        const data = JSON.parse(captured);
+        addGift(data.title, data.url, data.price, data.image);
+        localStorage.removeItem('uchiaTemp');
+        document.getElementById('bookmarklet-info').style.display = 'none';
+      }
+    }
+
+    function dismissCapture() {
+      localStorage.removeItem('uchiaTemp');
+      document.getElementById('bookmarklet-info').style.display = 'none';
+    }
+
+    function addList(name) {
+      if (name.trim()) {
+        const newList = {
+          id: Date.now(),
+          name: name.trim(),
+          gifts: []
+        };
+        state.lists.push(newList);
+        state.activeListId = newList.id;
+        saveToLocalStorage();
+        render();
+        closeModal();
+      }
+    }
+
+    function deleteList(listId) {
+      if (state.lists.length === 1) return;
+      if (confirm('Delete this list and all its gifts?')) {
+        state.lists = state.lists.filter(list => list.id !== listId);
+        if (state.activeListId === listId) {
+          state.activeListId = state.lists[0].id;
+        }
+        saveToLocalStorage();
+        render();
+      }
+    }
+
+    function setActiveList(listId) {
+      state.activeListId = listId;
+      saveToLocalStorage();
+      render();
+    }
+
+    function addGift(title, url, price, imageUrl) {
+      if (title.trim() && url.trim()) {
+        const newGift = {
+          id: Date.now(),
+          title: title.trim(),
+          url: url.trim(),
+          price: price.trim() || '',
+          imageUrl: imageUrl || null
+        };
+        
+        state.lists = state.lists.map(list => 
+          list.id === state.activeListId 
+            ? { ...list, gifts: [...list.gifts, newGift] }
+            : list
+        );
+        saveToLocalStorage();
+        render();
+        closeModal();
+      }
+    }
+
+    function deleteGift(giftId) {
+      if (confirm('Remove this gift from your list?')) {
+        state.lists = state.lists.map(list => 
+          list.id === state.activeListId
+            ? { ...list, gifts: list.gifts.filter(gift => gift.id !== giftId) }
+            : list
+        );
+        saveToLocalStorage();
+        render();
+      }
+    }
+
+    function editGift(giftId) {
+      const activeList = getActiveList();
+      const gift = activeList.gifts.find(g => g.id === giftId);
+      if (!gift) return;
+
+      const modal = document.getElementById('add-gift-modal');
+      modal.innerHTML = `
+        <div class="form-modal" onclick="if(event.target === this) closeModal()">
+          <div class="form-container">
+            <h3 class="form-title">Edit Gift</h3>
+            
+            <div class="form-group">
+              <label class="form-label">Product URL</label>
+              <input type="url" class="input" id="gift-url" value="${gift.url}" placeholder="https://amazon.com/..." />
+              <button class="btn" id="fetch-btn" style="margin-top: 0.75rem; width: 100%;">
+                Fetch Product Details
+              </button>
+              <div id="loading-indicator" style="display: none; margin-top: 0.5rem; font-size: 0.85rem; color: #c9a959; font-weight: 600;"></div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Gift Name</label>
+              <input type="text" class="input" id="gift-title" value="${gift.title}" placeholder="e.g., Houndstooth Phone Case" />
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Price</label>
+              <input type="text" class="input" id="gift-price" value="${gift.price}" placeholder="$29.99" />
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Image URL</label>
+              <input type="url" class="input" id="gift-image" value="${gift.imageUrl || ''}" placeholder="https://..." />
+            </div>
+            
+            <div class="form-actions">
+              <button class="btn" style="flex: 1;" onclick="handleUpdateGift(${giftId})">Update Gift</button>
+              <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+            </div>
+          </div>
+        </div>
+      `;
+      modal.style.display = 'flex';
+      
+      setTimeout(() => {
+        document.getElementById('gift-url').focus();
+        document.getElementById('fetch-btn').onclick = handleFetchProductData;
+      }, 100);
+    }
+
+    function updateGift(giftId, title, url, price, imageUrl) {
+      state.lists = state.lists.map(list => 
+        list.id === state.activeListId
+          ? {
+              ...list,
+              gifts: list.gifts.map(gift =>
+                gift.id === giftId
+                  ? { ...gift, title: title.trim(), url: url.trim(), price: price.trim(), imageUrl: imageUrl || null }
+                  : gift
+              )
+            }
+          : list
+      );
+      saveToLocalStorage();
+      render();
+      closeModal();
+    }
+
+    function handleUpdateGift(giftId) {
+      const title = document.getElementById('gift-title').value;
+      const url = document.getElementById('gift-url').value;
+      const price = document.getElementById('gift-price').value;
+      const imageUrl = document.getElementById('gift-image').value;
+      
+      if (title.trim() && url.trim()) {
+        updateGift(giftId, title, url, price, imageUrl);
+      }
+    }
+
+    async function extractProductData(url) {
+      try {
+        // Use local scraper backend
+        const response = await fetch('http://localhost:5000/api/scrape', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ url })
+        });
+
+        if (!response.ok) {
+          throw new Error('Scraper request failed');
+        }
+
+        const data = await response.json();
+        
+        return {
+          title: data.title || null,
+          price: data.price || null,
+          imageUrl: data.imageUrl || null
+        };
+      } catch (error) {
+        console.error('Error extracting product data:', error);
+        return { imageUrl: null, price: null, title: null };
+      }
+    }
+
+    async function handleFetchProductData() {
+      const urlInput = document.getElementById('gift-url');
+      const titleInput = document.getElementById('gift-title');
+      const priceInput = document.getElementById('gift-price');
+      const imageInput = document.getElementById('gift-image');
+      const fetchBtn = document.getElementById('fetch-btn');
+      const loadingIndicator = document.getElementById('loading-indicator');
+
+      const url = urlInput.value.trim();
+      if (!url) {
+        alert('Please enter a product URL first');
+        return;
+      }
+
+      fetchBtn.disabled = true;
+      fetchBtn.textContent = 'Fetching...';
+      loadingIndicator.style.display = 'block';
+      loadingIndicator.textContent = 'Fetching product details...';
+
+      const data = await extractProductData(url);
+
+      if (data.title && !titleInput.value) {
+        titleInput.value = data.title;
+      }
+      if (data.price && !priceInput.value) {
+        priceInput.value = data.price;
+      }
+      if (data.imageUrl && !imageInput.value) {
+        imageInput.value = data.imageUrl;
+      }
+
+      fetchBtn.disabled = false;
+      fetchBtn.textContent = 'Fetch Product Details';
+      loadingIndicator.textContent = data.title || data.price || data.imageUrl 
+        ? '✓ Product details loaded' 
+        : '⚠ Could not fetch details. Please enter manually.';
+      
+      setTimeout(() => {
+        loadingIndicator.style.display = 'none';
+      }, 3000);
+    }
+
+    function showAddGiftModal() {
+      const modal = document.getElementById('add-gift-modal');
+      modal.innerHTML = `
+        <div class="form-modal" onclick="if(event.target === this) closeModal()">
+          <div class="form-container">
+            <h3 class="form-title">Add New Gift</h3>
+            
+            <div class="form-group">
+              <label class="form-label">Product URL</label>
+              <input type="url" class="input" id="gift-url" placeholder="https://amazon.com/..." />
+              <button class="btn" id="fetch-btn" style="margin-top: 0.75rem; width: 100%;">
+                Fetch Product Details
+              </button>
+              <div id="loading-indicator" style="display: none; margin-top: 0.5rem; font-size: 0.85rem; color: #c9a959; font-weight: 600;"></div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Gift Name</label>
+              <input type="text" class="input" id="gift-title" placeholder="e.g., Houndstooth Phone Case" />
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Price</label>
+              <input type="text" class="input" id="gift-price" placeholder="$29.99" />
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Image URL</label>
+              <input type="url" class="input" id="gift-image" placeholder="https://..." />
+            </div>
+            
+            <div class="form-actions">
+              <button class="btn" style="flex: 1;" onclick="handleAddGift()">Save Gift</button>
+              <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+            </div>
+          </div>
+        </div>
+      `;
+      modal.style.display = 'flex';
+      
+      setTimeout(() => {
+        document.getElementById('gift-url').focus();
+        document.getElementById('fetch-btn').onclick = handleFetchProductData;
+      }, 100);
+    }
+
+    function showAddListModal() {
+      const modal = document.getElementById('add-list-modal');
+      modal.innerHTML = `
+        <div class="form-modal" onclick="if(event.target === this) closeModal()">
+          <div class="form-container">
+            <h3 class="form-title">Create New List</h3>
+            <div class="form-group">
+              <label class="form-label">List Name</label>
+              <input type="text" class="input" id="list-name" placeholder="e.g., Birthday, Holiday" />
+            </div>
+            <div class="form-actions">
+              <button class="btn" style="flex: 1;" onclick="handleAddList()">Create List</button>
+              <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+            </div>
+          </div>
+        </div>
+      `;
+      modal.style.display = 'flex';
+      setTimeout(() => document.getElementById('list-name').focus(), 100);
+    }
+
+    function handleAddGift() {
+      const title = document.getElementById('gift-title').value;
+      const url = document.getElementById('gift-url').value;
+      const price = document.getElementById('gift-price').value;
+      const imageUrl = document.getElementById('gift-image').value;
+      addGift(title, url, price, imageUrl);
+    }
+
+    function handleAddList() {
+      const name = document.getElementById('list-name').value;
+      addList(name);
+    }
+
+    function closeModal() {
+      document.getElementById('add-gift-modal').style.display = 'none';
+      document.getElementById('add-list-modal').style.display = 'none';
+    }
+
+    function renderTabs() {
+      const container = document.getElementById('nav-tabs');
+      container.innerHTML = state.lists.map(list => `
+        <div class="nav-item list-tab ${list.id === state.activeListId ? 'active' : ''}" 
+             onclick="setActiveList(${list.id})">
+          ${list.name}
+          <span class="list-count">${list.gifts.length}</span>
+        </div>
+      `).join('') + `
+        <div class="nav-item" onclick="showAddListModal()">
+          ${icons.plus} New List
+        </div>
+      `;
+
+      const activeList = getActiveList();
+      document.getElementById('list-title').textContent = activeList?.name || 'Wishlist';
+    }
+
+    function renderGifts() {
+      const container = document.getElementById('gifts-container');
+      const activeList = getActiveList();
+
+      if (!activeList || activeList.gifts.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">${icons.gift}</div>
+            <h3 class="empty-state-title">No Gifts Yet</h3>
+            <p class="empty-state-text">Start building your wishlist</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = '<div class="gift-grid">' + activeList.gifts.map(gift => `
+        <div class="gift-card">
+          <div class="gift-image-container">
+            ${gift.imageUrl ? `
+              <img src="${gift.imageUrl}" alt="${gift.title}" class="gift-image" 
+                   onerror="this.parentElement.innerHTML='<div class=\\'gift-icon-placeholder\\'>${icons.gift}</div>'" />
+            ` : `
+              <div class="gift-icon-placeholder">${icons.gift}</div>
+            `}
+          </div>
+          <div class="gift-details">
+            <h3 class="gift-title">${gift.title}</h3>
+            ${gift.price ? `<div class="gift-price">${gift.price}</div>` : ''}
+            <a href="${gift.url}" target="_blank" class="gift-link">
+              ${new URL(gift.url).hostname} ${icons.external}
+            </a>
+          </div>
+          <button class="edit-btn" onclick="event.stopPropagation(); editGift(${gift.id})" title="Edit gift">
+            ${icons.edit}
+          </button>
+          <button class="delete-btn" onclick="event.stopPropagation(); deleteGift(${gift.id})" title="Delete gift">
+            ${icons.trash}
+          </button>
+        </div>
+      `).join('') + '</div>';
+    }
+
+    function renderFooter() {
+      const totalGifts = state.lists.reduce((total, list) => total + list.gifts.length, 0);
+      document.getElementById('footer-stats').textContent = 
+        `${totalGifts} gifts across ${state.lists.length} lists`;
+    }
+
+    function render() {
+      renderTabs();
+      renderGifts();
+      renderFooter();
+    }
+
+    loadFromLocalStorage();
+    checkForCapturedProduct();
+    render();
+  </script>
+</body>
+</html>
