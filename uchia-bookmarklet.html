@@ -328,9 +328,19 @@
       background: white;
       border: 1px solid #e0e0e0;
       transition: all 0.2s;
-      cursor: pointer;
+      cursor: grab;
       position: relative;
       overflow: hidden;
+    }
+
+    .gift-card.dragging {
+      opacity: 0.5;
+      cursor: grabbing;
+    }
+
+    .gift-card.drag-over {
+      border: 2px dashed #c9a959;
+      transform: scale(1.02);
     }
 
     .gift-card:hover {
@@ -1017,10 +1027,69 @@
       const url = document.getElementById('gift-url').value;
       const price = document.getElementById('gift-price').value;
       const imageUrl = document.getElementById('gift-image').value;
-      
+
       if (title.trim() && url.trim()) {
         updateGift(giftId, title, url, price, imageUrl);
       }
+    }
+
+    function reorderGift(fromIndex, toIndex) {
+      state.lists = state.lists.map(list => {
+        if (list.id === state.activeListId) {
+          const newGifts = [...list.gifts];
+          const [movedGift] = newGifts.splice(fromIndex, 1);
+          newGifts.splice(toIndex, 0, movedGift);
+          return { ...list, gifts: newGifts };
+        }
+        return list;
+      });
+      saveToLocalStorage();
+      render();
+    }
+
+    let draggedIndex = null;
+
+    function handleDragStart(e, index) {
+      draggedIndex = index;
+      e.currentTarget.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/html', e.currentTarget.innerHTML);
+    }
+
+    function handleDragEnd(e) {
+      e.currentTarget.classList.remove('dragging');
+      document.querySelectorAll('.gift-card').forEach(card => {
+        card.classList.remove('drag-over');
+      });
+    }
+
+    function handleDragOver(e) {
+      if (e.preventDefault) {
+        e.preventDefault();
+      }
+      e.dataTransfer.dropEffect = 'move';
+      return false;
+    }
+
+    function handleDragEnter(e) {
+      e.currentTarget.classList.add('drag-over');
+    }
+
+    function handleDragLeave(e) {
+      e.currentTarget.classList.remove('drag-over');
+    }
+
+    function handleDrop(e, dropIndex) {
+      if (e.stopPropagation) {
+        e.stopPropagation();
+      }
+      e.preventDefault();
+
+      if (draggedIndex !== null && draggedIndex !== dropIndex) {
+        reorderGift(draggedIndex, dropIndex);
+      }
+
+      return false;
     }
 
     async function extractProductData(url) {
@@ -1241,11 +1310,14 @@
         return;
       }
 
-      container.innerHTML = '<div class="gift-grid">' + activeList.gifts.map(gift => `
-        <div class="gift-card">
+      container.innerHTML = '<div class="gift-grid">' + activeList.gifts.map((gift, index) => `
+        <div class="gift-card"
+             draggable="true"
+             data-index="${index}"
+             data-gift-id="${gift.id}">
           <div class="gift-image-container">
             ${gift.imageUrl ? `
-              <img src="${gift.imageUrl}" alt="${gift.title}" class="gift-image" 
+              <img src="${gift.imageUrl}" alt="${gift.title}" class="gift-image"
                    onerror="this.parentElement.innerHTML='<div class=\\'gift-icon-placeholder\\'>${icons.gift}</div>'" />
             ` : `
               <div class="gift-icon-placeholder">${icons.gift}</div>
@@ -1266,6 +1338,17 @@
           </button>
         </div>
       `).join('') + '</div>';
+
+      // Add drag-and-drop event listeners
+      const giftCards = container.querySelectorAll('.gift-card');
+      giftCards.forEach((card, index) => {
+        card.addEventListener('dragstart', (e) => handleDragStart(e, index));
+        card.addEventListener('dragend', handleDragEnd);
+        card.addEventListener('dragover', handleDragOver);
+        card.addEventListener('dragenter', handleDragEnter);
+        card.addEventListener('dragleave', handleDragLeave);
+        card.addEventListener('drop', (e) => handleDrop(e, index));
+      });
     }
 
     function parsePrice(priceString) {
