@@ -563,11 +563,6 @@
   </style>
 </head>
 <body>
-  <div class="help-banner" onclick="showBookmarkletSetup()">
-    <div class="help-banner-text">💡 Amazon blocking the scraper? Use the Bookmarklet! Click here to set it up.</div>
-    <div class="help-banner-subtext">3-step setup: Copy code → Create bookmark → Start shopping!</div>
-  </div>
-  
   <div class="header">
     <div class="header-top">
       <div>
@@ -1273,10 +1268,37 @@
       `).join('') + '</div>';
     }
 
+    function parsePrice(priceString) {
+      if (!priceString) return 0;
+      // Extract numbers from price string like "$123.45" or "$1,234.56"
+      const cleaned = priceString.replace(/[^0-9.]/g, '');
+      const parsed = parseFloat(cleaned);
+      return isNaN(parsed) ? 0 : parsed;
+    }
+
     function renderFooter() {
       const totalGifts = state.lists.reduce((total, list) => total + list.gifts.length, 0);
-      document.getElementById('footer-stats').textContent = 
-        `${totalGifts} gifts across ${state.lists.length} lists`;
+
+      // Calculate total cart value
+      const totalValue = state.lists.reduce((total, list) => {
+        const listTotal = list.gifts.reduce((sum, gift) => {
+          return sum + parsePrice(gift.price);
+        }, 0);
+        return total + listTotal;
+      }, 0);
+
+      // Format the total value with commas if needed
+      const formattedValue = totalValue.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+
+      const formattedTotal = totalValue > 0
+        ? ` • Total Value: $${formattedValue}`
+        : '';
+
+      document.getElementById('footer-stats').textContent =
+        `${totalGifts} gifts across ${state.lists.length} lists${formattedTotal}`;
     }
 
     function render() {

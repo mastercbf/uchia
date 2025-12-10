@@ -15,7 +15,7 @@ The browser can't directly scrape websites due to CORS security. You need to run
 
 3. **Install Python dependencies** (one time only)
    ```bash
-   pip install flask flask-cors requests beautifulsoup4
+   pip3 install flask flask-cors requests beautifulsoup4
    ```
 
 4. **Start the scraper server**
