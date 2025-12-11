@@ -105,34 +105,51 @@
       color: #000;
     }
 
-    .nav {
-      max-width: 1400px;
-      margin: 0 auto;
-      display: flex;
-      gap: 2.5rem;
-      font-size: 0.95rem;
-      font-weight: 600;
-      letter-spacing: 1px;
-      text-transform: uppercase;
+    .lists-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
     }
 
-    .nav-item {
-      color: white;
-      text-decoration: none;
+    .list-icon-card {
+      background: white;
+      border: 2px solid #e0e0e0;
+      padding: 2rem 1.5rem;
+      text-align: center;
       cursor: pointer;
-      transition: color 0.2s;
-      padding: 0.5rem 0;
-      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      position: relative;
     }
 
-    .nav-item:hover {
-      color: #c9a959;
-      border-bottom-color: #c9a959;
+    .list-icon-card:hover {
+      border-color: #c9a959;
+      transform: translateY(-4px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.1);
     }
 
-    .nav-item.active {
-      color: #c9a959;
-      border-bottom-color: #c9a959;
+    .list-icon-card.active {
+      border-color: #c9a959;
+      background: #fffbf0;
+    }
+
+    .list-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .list-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.3rem;
+      letter-spacing: 1px;
+      color: #000;
+      margin-bottom: 0.5rem;
+    }
+
+    .list-gift-count {
+      font-size: 0.85rem;
+      color: #666;
+      font-weight: 600;
     }
 
     .container {
@@ -243,57 +260,7 @@
       color: white;
     }
 
-    .tabs-container {
-      display: flex;
-      gap: 0;
-      margin-bottom: 3rem;
-      border-bottom: 2px solid #e0e0e0;
-    }
-
-    .list-tab {
-      background: transparent;
-      color: #666;
-      padding: 1rem 2rem;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      border: none;
-      border-bottom: 3px solid transparent;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      position: relative;
-    }
-
-    .list-tab:hover {
-      color: #000;
-      background: #f9f9f9;
-    }
-
-    .list-tab.active {
-      color: #000;
-      border-bottom-color: #c9a959;
-      background: white;
-    }
-
-    .list-count {
-      background: #f0f0f0;
-      color: #666;
-      padding: 0.25rem 0.5rem;
-      border-radius: 3px;
-      font-size: 0.75rem;
-    }
-
-    .list-tab.active .list-count {
-      background: #c9a959;
-      color: white;
-    }
-
     .delete-list-btn {
-      opacity: 0;
       background: rgba(0,0,0,0.7);
       color: white;
       border: none;
@@ -305,11 +272,6 @@
       justify-content: center;
       cursor: pointer;
       transition: all 0.2s;
-      margin-left: auto;
-    }
-
-    .list-tab:hover .delete-list-btn {
-      opacity: 1;
     }
 
     .delete-list-btn:hover {
@@ -618,7 +580,10 @@
         </a>
       </div>
       <div class="header-actions">
-        <a href="javascript:void(0)" 
+        <button class="btn btn-secondary" onclick="showListsModal()" style="font-size: 0.85rem; padding: 0.75rem 1.5rem; margin-right: 1rem;">
+          📋 Lists
+        </button>
+        <a href="javascript:void(0)"
            class="bookmarklet-btn"
            draggable="true"
            title="Drag me to your bookmarks bar!"
@@ -631,7 +596,6 @@
         </button>
       </div>
     </div>
-    <nav class="nav" id="nav-tabs"></nav>
   </div>
 
   <div class="container">
@@ -671,6 +635,9 @@
 
   <!-- Add List Modal -->
   <div id="add-list-modal" style="display: none;"></div>
+
+  <!-- Lists Modal -->
+  <div id="lists-modal" style="display: none;"></div>
 
   <script>
     const icons = {
@@ -1301,38 +1268,77 @@
     function closeModal() {
       document.getElementById('add-gift-modal').style.display = 'none';
       document.getElementById('add-list-modal').style.display = 'none';
+      document.getElementById('lists-modal').style.display = 'none';
+    }
+
+    function selectListAndClose(listId) {
+      setActiveList(listId);
+      closeModal();
+    }
+
+    function showListsModal() {
+      const modal = document.getElementById('lists-modal');
+
+      if (state.lists.length === 0) {
+        modal.innerHTML = `
+          <div class="form-modal" onclick="if(event.target === this) closeModal()">
+            <div class="form-container" style="max-width: 600px;">
+              <h3 class="form-title">Your Lists</h3>
+              <div class="empty-state" style="padding: 3rem 1rem;">
+                <div class="empty-state-icon">✨</div>
+                <h3 class="empty-state-title">No Lists Yet</h3>
+                <p class="empty-state-text">Create your first list to get started</p>
+              </div>
+              <div class="form-actions">
+                <button class="btn" style="flex: 1;" onclick="closeModal(); showAddListModal();">
+                  ${icons.plus} Create New List
+                </button>
+                <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        modal.innerHTML = `
+          <div class="form-modal" onclick="if(event.target === this) closeModal()">
+            <div class="form-container" style="max-width: 900px;">
+              <h3 class="form-title">Your Lists</h3>
+              <div class="lists-grid">
+                ${state.lists.map(list => `
+                  <div class="list-icon-card ${list.id === state.activeListId ? 'active' : ''}"
+                       onclick="selectListAndClose(${list.id})">
+                    <div class="list-icon">📋</div>
+                    <div class="list-name">${list.name}</div>
+                    <div class="list-gift-count">${list.gifts.length} ${list.gifts.length === 1 ? 'gift' : 'gifts'}</div>
+                    <button class="delete-list-btn"
+                            onclick="event.stopPropagation(); deleteList(${list.id})"
+                            title="Delete list"
+                            style="position: absolute; top: 0.5rem; right: 0.5rem; opacity: 1;">
+                      ${icons.trash}
+                    </button>
+                  </div>
+                `).join('')}
+                <div class="list-icon-card" onclick="closeModal(); showAddListModal();" style="border-style: dashed;">
+                  <div class="list-icon">${icons.plus}</div>
+                  <div class="list-name">New List</div>
+                  <div class="list-gift-count">Create a new list</div>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="closeModal()">Close</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      modal.style.display = 'flex';
     }
 
     function renderTabs() {
-      const container = document.getElementById('nav-tabs');
-      
-      if (state.lists.length === 0) {
-        container.innerHTML = `
-          <div class="nav-item" onclick="showAddListModal()">
-            ${icons.plus} New List
-          </div>
-        `;
-        document.getElementById('list-title').textContent = 'Your Lists';
-        return;
-      }
-      
-      container.innerHTML = state.lists.map(list => `
-        <div class="nav-item list-tab ${list.id === state.activeListId ? 'active' : ''}" 
-             onclick="setActiveList(${list.id})">
-          ${list.name}
-          <span class="list-count">${list.gifts.length}</span>
-          <button class="delete-list-btn" onclick="event.stopPropagation(); deleteList(${list.id})" title="Delete list">
-            ${icons.trash}
-          </button>
-        </div>
-      `).join('') + `
-        <div class="nav-item" onclick="showAddListModal()">
-          ${icons.plus} New List
-        </div>
-      `;
-
+      // Update the section title to show the active list name
       const activeList = getActiveList();
-      document.getElementById('list-title').textContent = activeList?.name || 'Wishlist';
+      document.getElementById('list-title').textContent = activeList?.name || 'Your Lists';
     }
 
     function renderGifts() {
